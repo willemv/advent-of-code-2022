@@ -4,7 +4,7 @@ mod tests {
 
     use itertools::Itertools;
 
-    use crate::common::tests::get_input;
+    use crate::common::tests::{get_input, get_test_input};
 
     const STARTING_ITEMS_PREFIX: &str = "  Starting items: ";
     const OPERATIONS_PREFIX: &str = "  Operation: new = old ";
@@ -53,17 +53,37 @@ mod tests {
     }
 
     #[test]
+    fn day11_part1_reference() -> Result<(), Box<dyn Error>> {
+        let monkey_business_level = day11(get_test_input(11)?, 3, 20)?;
+        assert!(monkey_business_level == 10605);
+        Ok(())
+    }
+
+    #[test]
     fn day11_part1() -> Result<(), Box<dyn Error>> {
-        day11(3, 20)
+        let monkey_business_level = day11(get_input(11)?, 3, 20)?;
+        println!("Monkey business level: {monkey_business_level}");
+        Ok(())
+    }
+    #[test]
+    fn day11_part2_reference() -> Result<(), Box<dyn Error>> {
+        let monkey_business_level = day11(get_test_input(11)?, 1, 10_000)?;
+        assert!(monkey_business_level == 2713310158);
+        Ok(())
     }
 
     #[test]
     fn day11_part2() -> Result<(), Box<dyn Error>> {
-        day11(1, 10_000)
+        let monkey_business_level = day11(get_input(11)?, 1, 10_000)?;
+        println!("Monkey business level: {monkey_business_level}");
+        Ok(())
     }
 
-    fn day11(worry_reduction: usize, number_of_rounds: usize) -> Result<(), Box<dyn Error>> {
-        let input = get_input(11)?;
+    fn day11(
+        input: String,
+        worry_reduction: usize,
+        number_of_rounds: usize,
+    ) -> Result<usize, Box<dyn Error>> {
         let mut monkeys = Vec::with_capacity(10);
 
         for monkey_spec in input.split("\n\n") {
@@ -140,7 +160,7 @@ mod tests {
             .sorted()
             .rev()
             .collect_vec();
-        println!("Result: {}", (sorted_counts[0] * sorted_counts[1]));
-        Ok(())
+        let monkey_business_level = sorted_counts[0] * sorted_counts[1];
+        Ok(monkey_business_level)
     }
 }

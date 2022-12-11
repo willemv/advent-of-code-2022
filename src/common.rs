@@ -1,6 +1,6 @@
 #[cfg(test)]
 pub mod tests {
-    use std::env;
+    use std::{env, fs};
     use std::env::VarError;
     use std::error::Error;
 
@@ -19,5 +19,10 @@ pub mod tests {
             .text()?;
 
         Ok(body)
+    }
+
+    pub fn get_test_input(day: u8) -> Result<String, Box<dyn Error>> {
+       let result = fs::read_to_string(format!("day{day}_test_input.txt"))?;
+       Ok(result)
     }
 }
