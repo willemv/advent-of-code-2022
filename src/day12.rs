@@ -16,13 +16,22 @@ mod tests {
         height_data: Vec<u32>,
         width: usize,
         height: usize,
+        came_from: Option<HashMap<Coord, Coord>>,
     }
 
     type Coord = (usize, usize);
-    type Path = Vec<Coord>;
+    struct Path {
+        path: Vec<Coord>,
+    }
+
+    impl Path {
+        fn steps(&self) -> usize {
+            self.path.len() - 1 //the steps between each coordinate, not the number of coordinates
+        }
+    }
 
     impl Map {
-        fn parse(input: &str) -> (Coord, Coord, Map) {
+        fn parse(input: &str) -> (Coord, Map) {
             let mut heights = vec![];
             let mut width = None;
             let mut start = None;
@@ -41,7 +50,10 @@ mod tests {
                             end = Some((x, y));
                             heights.push(26)
                         }
-                        _ => heights.push(to_height(c)),
+                        _ => heights.push(match c {
+                            'a'..='z' => c as u32 - 96,
+                            _ => panic!(),
+                        }),
                     };
                 }
             }
@@ -51,14 +63,18 @@ mod tests {
             let width = width.unwrap();
             let height = heights.len() / width;
 
-            let map = Map {
+            let mut map = Map {
                 height_data: heights,
                 width,
                 height,
+                came_from: None,
             };
 
-            (start, end, map)
+            map.prepare_search(end);
+
+            (start, map)
         }
+
         fn height_at(&self, x: usize, y: usize) -> Option<u32> {
             if x >= self.width {
                 return None;
@@ -102,12 +118,12 @@ mod tests {
             c.1 * self.width + c.0
         }
 
-        fn find_path(&self, start: Coord, end: Coord) -> Option<Path> {
+        fn prepare_search(&mut self, end: Coord) {
             let mut frontier = VecDeque::new();
-            frontier.push_front(start);
+            frontier.push_front(end);
 
             let mut visited: HashSet<Coord> = HashSet::new();
-            visited.insert(start);
+            visited.insert(end);
             let mut came_from: HashMap<Coord, Coord> = HashMap::new();
 
             while !frontier.is_empty() {
@@ -116,7 +132,7 @@ mod tests {
                     let current_height = self.height_at(current.0, current.1).unwrap();
                     let neighbor_height = self.height_at(neighbor.0, neighbor.1).unwrap();
                     let reachable_from_current =
-                        current_height > neighbor_height || neighbor_height - current_height <= 1;
+                        current_height < neighbor_height || current_height - neighbor_height <= 1;
                     if !reachable_from_current {
                         continue;
                     }
@@ -131,47 +147,42 @@ mod tests {
                 }
             }
 
-            if !came_from.contains_key(&end) {
+            self.came_from = Some(came_from);
+        }
+
+        fn find_path(&self, start: &Coord) -> Option<Path> {
+            let came_from = self.came_from.as_ref().unwrap();
+
+            if !came_from.contains_key(&start) {
                 return None;
             }
 
-            let mut path_so_far: Vec<Coord> = Vec::new();
-            let mut current = Some(end);
-            // let mut previous: Option<Coord> = None;
-            loop {
-                let c = current.unwrap();
-                current = came_from.remove(&c);
-                match current {
-                    None => break,
-                    Some(c) => path_so_far.push(c),
-                }
+            let mut path: Vec<Coord> = Vec::new();
+            let mut current = Some(start);
+            while let Some(c) = current {
+                path.push(c.clone());
+                current = came_from.get(&c);
             }
-            Some(path_so_far)
-        }
-    }
 
-    fn to_height(c: char) -> u32 {
-        match c {
-            'a'..='z' => c as u32 - 96,
-            _ => panic!(),
+            Some(Path{path})
         }
     }
 
     #[test]
-    fn day12_sample() -> Result<(), Box<dyn Error>> {
+    fn day12_part1_sample() -> Result<(), Box<dyn Error>> {
         let path = day12(get_test_input(12)?)?;
-        assert!(path.len() == 31);
+        assert!(path.steps() == 31);
         Ok(())
     }
 
     #[test]
     fn day12_part1() -> Result<(), Box<dyn Error>> {
         let path = day12(get_input(12)?)?;
-        assert!(path.len() == 520);
+        assert!(path.steps() == 520);
         Ok(())
     }
 
-    fn find_shortest_path_from_any_start(map: &Map, end: Coord) -> Option<Path> {
+    fn find_shortest_path_from_any_start(map: &Map) -> Option<Path> {
         let mut shortest_path = None;
         for y in 0..map.height {
             for x in 0..map.width {
@@ -179,11 +190,11 @@ mod tests {
                     continue;
                 }
 
-                shortest_path = match (map.find_path((x, y), end), shortest_path) {
+                shortest_path = match (map.find_path(&(x, y)), shortest_path) {
                     (None, shortest) => shortest,
                     (Some(path), None) => Some(path),
                     (Some(path), Some(shortest)) => {
-                        if shortest.len() > path.len() {
+                        if shortest.steps() > path.steps() {
                             Some(path)
                         } else {
                             Some(shortest)
@@ -198,13 +209,13 @@ mod tests {
     #[test]
     fn day12_part2_sample() -> Result<(), Box<dyn Error>> {
         let input = get_test_input(12)?;
-        let (_, end, map) = Map::parse(&input);
+        let (_, map) = Map::parse(&input);
 
-        let shortest_path = find_shortest_path_from_any_start(&map, end);
+        let shortest_path = find_shortest_path_from_any_start(&map);
 
         if let Some(shortest) = shortest_path {
             visualize_path_on_map(&map, &shortest);
-            assert!(shortest.len() == 29)
+            assert!(shortest.steps() == 29)
         } else {
             panic!("No shortest path found");
         }
@@ -215,13 +226,13 @@ mod tests {
     #[test]
     fn day12_part2() -> Result<(), Box<dyn Error>> {
         let input = get_input(12)?;
-        let (_, end, map) = Map::parse(&input);
+        let (_, map) = Map::parse(&input);
 
-        let shortest_path = find_shortest_path_from_any_start(&map, end);
+        let shortest_path = find_shortest_path_from_any_start(&map);
 
         if let Some(shortest) = shortest_path {
             visualize_path_on_map(&map, &shortest);
-            println!("shortest found: {}", shortest.len());
+            println!("shortest found: {}", shortest.steps());
         }
 
         Ok(())
@@ -229,14 +240,11 @@ mod tests {
 
     fn visualize_path_on_map(map: &Map, path: &Path) {
         let mut formatted = vec!['.'; map.height_data.len()];
-        let end = path.first().unwrap();
-        formatted[map.to_index(end)] = 'E';
-        formatted[map.to_index(path.last().unwrap())] = 'S';
 
-        for w in path.windows(2) {
-            let p = w[0];
-            let c = w[1];
-            let diff = (p.0 as i32 - c.0 as i32, p.1 as i32 - c.1 as i32);
+        for w in path.path.windows(2) {
+            let c = w[0];
+            let t = w[1];
+            let diff = (t.0 as i32 - c.0 as i32, t.1 as i32 - c.1 as i32);
 
             let ch = match diff {
                 (1, 0) => RIGHT_CHAR,
@@ -247,6 +255,8 @@ mod tests {
             };
             formatted[map.to_index(&c)] = ch;
         }
+        // formatted[map.to_index(path.first().unwrap())] = 'S';
+        formatted[map.to_index(path.path.last().unwrap())] = 'E';
 
         for (i, c) in formatted.iter().enumerate() {
             if i % map.width == 0 {
@@ -257,10 +267,10 @@ mod tests {
         println!();
     }
 
-    fn day12(input: String) -> Result<Vec<Coord>, Box<dyn Error>> {
-        let (start, end, map) = Map::parse(&input);
+    fn day12(input: String) -> Result<Path, Box<dyn Error>> {
+        let (start, map) = Map::parse(&input);
 
-        let path = map.find_path(start, end).unwrap();
+        let path = map.find_path(&start).unwrap();
 
         visualize_path_on_map(&map, &path);
 
