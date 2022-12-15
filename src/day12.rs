@@ -5,7 +5,7 @@ mod tests {
         error::Error,
     };
 
-    use crate::common::tests::{get_input, get_test_input};
+    use crate::common::tests::{get_input, get_sample_input};
 
     const LEFT_CHAR: char = '←';
     const RIGHT_CHAR: char = '→';
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn day12_part1_sample() -> Result<(), Box<dyn Error>> {
-        let path = day12(get_test_input(12)?)?;
+        let path = day12(get_sample_input(12)?)?;
         assert!(path.steps() == 31);
         Ok(())
     }
@@ -208,7 +208,7 @@ mod tests {
 
     #[test]
     fn day12_part2_sample() -> Result<(), Box<dyn Error>> {
-        let input = get_test_input(12)?;
+        let input = get_sample_input(12)?;
         let (_, map) = Map::parse(&input);
 
         let shortest_path = find_shortest_path_from_any_start(&map);

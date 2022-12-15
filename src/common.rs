@@ -21,8 +21,8 @@ pub mod tests {
         Ok(body)
     }
 
-    pub fn get_test_input(day: u8) -> Result<String, Box<dyn Error>> {
-       let result = fs::read_to_string(format!("day{day}_test_input.txt"))?;
+    pub fn get_sample_input(day: u8) -> Result<String, Box<dyn Error>> {
+       let result = fs::read_to_string(format!("day{day}_sample_input.txt"))?;
        Ok(result)
     }
 }

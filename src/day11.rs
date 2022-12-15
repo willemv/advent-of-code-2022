@@ -4,7 +4,7 @@ mod tests {
 
     use itertools::Itertools;
 
-    use crate::common::tests::{get_input, get_test_input};
+    use crate::common::tests::{get_input, get_sample_input};
 
     const STARTING_ITEMS_PREFIX: &str = "  Starting items: ";
     const OPERATIONS_PREFIX: &str = "  Operation: new = old ";
@@ -54,7 +54,7 @@ mod tests {
 
     #[test]
     fn day11_part1_reference() -> Result<(), Box<dyn Error>> {
-        let monkey_business_level = day11(get_test_input(11)?, 3, 20)?;
+        let monkey_business_level = day11(get_sample_input(11)?, 3, 20)?;
         assert!(monkey_business_level == 10605);
         Ok(())
     }
@@ -67,7 +67,7 @@ mod tests {
     }
     #[test]
     fn day11_part2_reference() -> Result<(), Box<dyn Error>> {
-        let monkey_business_level = day11(get_test_input(11)?, 1, 10_000)?;
+        let monkey_business_level = day11(get_sample_input(11)?, 1, 10_000)?;
         assert!(monkey_business_level == 2713310158);
         Ok(())
     }
