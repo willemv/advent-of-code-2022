@@ -1,0 +1,36 @@
+strict digraph { 
+  
+
+  AA [fontsize=1 label="AA 0"]
+  AA -> DD
+  AA -> II
+  AA -> BB
+  BB [fontsize=40 label="BB 13"]
+  BB -> CC
+  BB -> AA
+  CC [fontsize=7 label="CC 2"]
+  CC -> DD
+  CC -> BB
+  DD [fontsize=61 label="DD 20"]
+  DD -> CC
+  DD -> AA
+  DD -> EE
+  EE [fontsize=10 label="EE 3"]
+  EE -> FF
+  EE -> DD
+  FF [fontsize=1 label="FF 0"]
+  FF -> EE
+  FF -> GG
+  GG [fontsize=1 label="GG 0"]
+  GG -> FF
+  GG -> HH
+  HH [fontsize=67 label="HH 22"]
+  HH -> GG
+  II [fontsize=1 label="II 0"]
+  II -> AA
+  II -> JJ
+  JJ [fontsize=64 label="JJ 21"]
+  JJ -> II
+
+
+}
